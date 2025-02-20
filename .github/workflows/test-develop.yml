@@ -26,7 +26,7 @@ jobs:
 
     # Build the solution without restoring dependencies again
     - name: Build
-      run: dotnet build HouseRentingSystem.sln --no-restore
+      run: dotnet build Homies.sln --no-restore
 
     # Run unit tests for the project
     - name: Run Unit Tests
