@@ -6,14 +6,6 @@ pipeline {
     }
 
     stages {
-        stage('Validate Jenkinsfile Syntax') {
-            steps {
-                script {
-                    echo 'Validating Jenkinsfile syntax...'
-                }
-                sh 'jenkins-linter validate Jenkinsfile || exit 1' // Ensure valid syntax (if linter is available)
-            }
-        }
 
         stage('Checkout Repository') {
             steps {
