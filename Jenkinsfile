@@ -9,10 +9,12 @@ pipeline {
         stage('Validate Jenkinsfile Syntax') {
             steps {
                 script {
-                    echo 'Validating Jenkinsfile syntax...'
-                    def result = sh(script: "which jenkins-linter && jenkins-linter validate Jenkinsfile", returnStatus: true)
+                    echo '🔍 Validating Jenkinsfile syntax...'
+                    def result = bat(script: "where jenkins-linter && jenkins-linter validate Jenkinsfile", returnStatus: true)
                     if (result != 0) {
-                        echo "⚠️ Jenkins Linter is not available, skipping validation."
+                        error("❌ Jenkinsfile validation failed!")
+                    } else {
+                        echo "✅ Jenkinsfile is valid!"
                     }
                 }
             }
