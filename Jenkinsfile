@@ -18,6 +18,7 @@ pipeline {
         stage('Verify Branch') {
             steps {
                 script {
+                    echo "Current Branch Name: '${env.BRANCH_NAME}'"
                     if (env.BRANCH_NAME == 'feature-ci-pipeline') {
                         echo "Executing pipeline for branch: ${env.BRANCH_NAME}"
                     } else {
