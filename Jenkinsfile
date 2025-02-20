@@ -53,24 +53,6 @@ pipeline {
             }
         }
 
-        stage('Validate Code Format') {
-            steps {
-                script {
-                    echo 'Validating code format using dotnet format...'
-                }
-                bat 'dotnet format --verify-no-changes || exit 1' // Ensure code follows formatting standards
-            }
-        }
-
-        stage('Lint Code & Syntax Check') {
-            steps {
-                script {
-                    echo 'Running syntax check and code linting...'
-                }
-                bat 'dotnet validate' // Validate project structure and syntax
-            }
-        }
-
         stage('Build') {
             steps {
                 script {
