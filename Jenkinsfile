@@ -6,6 +6,17 @@ pipeline {
     }
 
     stages {
+        stage('Validate Jenkinsfile Syntax') {
+            steps {
+                script {
+                    echo 'Validating Jenkinsfile syntax...'
+                    def result = sh(script: "which jenkins-linter && jenkins-linter validate Jenkinsfile", returnStatus: true)
+                    if (result != 0) {
+                        echo "⚠️ Jenkins Linter is not available, skipping validation."
+                    }
+                }
+            }
+        }
 
         stage('Checkout Repository') {
             steps {
@@ -69,7 +80,7 @@ pipeline {
                         script {
                             echo 'Running Unit Tests...'
                         }
-                        bat 'dotnet test Homies.Tests/Homies.Tests.csproj --no-build --verbosity normal'
+                        bat 'dotnet test Homies.Tests/Homies.Tests.csproj --no-build --verbosity normal || exit 1'
                     }
                 }
                 stage('Run Integration Tests') {
@@ -77,7 +88,7 @@ pipeline {
                         script {
                             echo 'Running Integration Tests...'
                         }
-                        bat 'dotnet test Homies.IntegrationTests/Homies.IntegrationTests.csproj --no-build --verbosity normal'
+                        bat 'dotnet test Homies.IntegrationTests/Homies.IntegrationTests.csproj --no-build --verbosity normal || exit 1'
                     }
                 }
             }
@@ -86,10 +97,16 @@ pipeline {
 
     post {
         success {
-            echo 'Pipeline executed successfully!'
+            echo '✅ Pipeline executed successfully!'
         }
         failure {
-            echo 'Pipeline failed. Check logs for details.'
+            echo '❌ Pipeline failed. Check logs for details.'
+            script {
+                currentBuild.result = 'FAILURE'
+            }
+        }
+        aborted {
+            echo '⚠️ Pipeline execution was aborted.'
         }
     }
 }
