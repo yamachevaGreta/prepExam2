@@ -2,10 +2,19 @@ pipeline {
     agent any
 
     environment {
-        DOTNET_VERSION = '6.0.x' // Define .NET version
+        DOTNET_VERSION = '6.0.x' // Define .NET version for consistency
     }
 
     stages {
+        stage('Validate Jenkinsfile Syntax') {
+            steps {
+                script {
+                    echo 'Validating Jenkinsfile syntax...'
+                }
+                sh 'jenkins-linter validate Jenkinsfile || exit 1' // Ensure valid syntax (if linter is available)
+            }
+        }
+
         stage('Checkout Repository') {
             steps {
                 script {
@@ -18,11 +27,11 @@ pipeline {
         stage('Verify Branch') {
             steps {
                 script {
-                    // Try different ways to get the branch name
+                    // Detect the current branch name
                     def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'
                     echo "Detected branch: '${branchName}'"
 
-                    // Normalize the branch name for safety
+                    // Allow execution only on the 'feature-ci-pipeline' branch
                     if (branchName.endsWith('feature-ci-pipeline') || branchName == 'feature-ci-pipeline') {
                         echo "Executing pipeline for branch: ${branchName}"
                     } else {
@@ -34,13 +43,12 @@ pipeline {
             }
         }
 
-
         stage('Set up .NET Core') {
             steps {
                 script {
                     echo 'Setting up .NET Core SDK...'
                 }
-                bat 'dotnet --version' // Ensure .NET is installed
+                bat 'dotnet --version' // Ensure .NET is installed and accessible
             }
         }
 
@@ -49,7 +57,25 @@ pipeline {
                 script {
                     echo 'Restoring dependencies...'
                 }
-                bat 'dotnet restore Homies.sln'
+                bat 'dotnet restore Homies.sln' // Restore NuGet packages
+            }
+        }
+
+        stage('Validate Code Format') {
+            steps {
+                script {
+                    echo 'Validating code format using dotnet format...'
+                }
+                bat 'dotnet format --verify-no-changes || exit 1' // Ensure code follows formatting standards
+            }
+        }
+
+        stage('Lint Code & Syntax Check') {
+            steps {
+                script {
+                    echo 'Running syntax check and code linting...'
+                }
+                bat 'dotnet validate' // Validate project structure and syntax
             }
         }
 
@@ -58,27 +84,27 @@ pipeline {
                 script {
                     echo 'Building the solution...'
                 }
-                bat 'dotnet build Homies.sln --no-restore'
+                bat 'dotnet build Homies.sln --no-restore' // Build without restoring dependencies again
             }
         }
 
         stage('Run Tests in Parallel') {
             parallel {
-                stage('Run Unit Tests in Parallel') {
+                stage('Run Unit Tests') {
                     steps {
                         script {
-                    echo 'Running Unit Tests...'
+                            echo 'Running Unit Tests...'
+                        }
+                        bat 'dotnet test Homies.Tests/Homies.Tests.csproj --no-build --verbosity normal'
+                    }
                 }
-                bat 'dotnet test Homies.Tests/Homies.Tests.csproj --no-build --verbosity normal'
-            }
-                }
-                stage('Run Integration Tests in Parallel') {
+                stage('Run Integration Tests') {
                     steps {
                         script {
-                    echo 'Running Integration Tests...'
-                }
-                bat 'dotnet test Homies.IntegrationTests/Homies.IntegrationTests.csproj --no-build --verbosity normal'
-                }
+                            echo 'Running Integration Tests...'
+                        }
+                        bat 'dotnet test Homies.IntegrationTests/Homies.IntegrationTests.csproj --no-build --verbosity normal'
+                    }
                 }
             }
         }
