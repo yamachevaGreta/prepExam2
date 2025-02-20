@@ -18,9 +18,13 @@ pipeline {
         stage('Verify Branch') {
             steps {
                 script {
-                    echo "Current Branch Name: '${env.BRANCH_NAME}'"
-                    if (env.BRANCH_NAME == 'feature-ci-pipeline') {
-                        echo "Executing pipeline for branch: ${env.BRANCH_NAME}"
+                    // Try different ways to get the branch name
+                    def branchName = env.BRANCH_NAME ?: env.GIT_BRANCH ?: 'unknown'
+                    echo "Detected branch: '${branchName}'"
+
+                    // Normalize the branch name for safety
+                    if (branchName.endsWith('feature-ci-pipeline') || branchName == 'feature-ci-pipeline') {
+                        echo "Executing pipeline for branch: ${branchName}"
                     } else {
                         echo "Skipping pipeline execution as the branch is not 'feature-ci-pipeline'"
                         currentBuild.result = 'ABORTED'
@@ -29,6 +33,7 @@ pipeline {
                 }
             }
         }
+
 
         stage('Set up .NET Core') {
             steps {
