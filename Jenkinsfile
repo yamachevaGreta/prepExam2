@@ -15,6 +15,20 @@ pipeline {
             }
         }
 
+        stage('Verify Branch') {
+            steps {
+                script {
+                    if (env.BRANCH_NAME == 'feature-ci-pipeline') {
+                        echo "Executing pipeline for branch: ${env.BRANCH_NAME}"
+                    } else {
+                        echo "Skipping pipeline execution as the branch is not 'feature-ci-pipeline'"
+                        currentBuild.result = 'ABORTED'
+                        error("Stopping pipeline execution")
+                    }
+                }
+            }
+        }
+
         stage('Set up .NET Core') {
             steps {
                 script {
