@@ -32,4 +32,4 @@ jobs:
     - name: Run Integration Tests
       run: |
         echo "Running Integration Tests..."
-        dotnet test Homies.IntegrationTests/Homies.IntegratonTests.csproj --no-build --verbosity normal
+        dotnet test Homies.IntegrationTests/Homies.IntegrationTests.csproj --no-build --verbosity normal
