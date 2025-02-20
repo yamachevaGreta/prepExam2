@@ -22,7 +22,7 @@ jobs:
 
     # Restore dependencies to generate project.assets.json
     - name: Install dependencies
-      run: dotnet restore HouseRentingSystem.sln  
+      run: dotnet restore Homies.sln  
 
     # Build the solution without restoring dependencies again
     - name: Build
